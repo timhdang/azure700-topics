@@ -10,7 +10,7 @@ resource "azurerm_public_ip" "onprem_gw_pip" {
   resource_group_name = azurerm_resource_group.onprem.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  zones = ["1"]
+  zones               = ["1"]
 }
 
 resource "azurerm_public_ip" "hub_gw_pip" {
@@ -21,7 +21,7 @@ resource "azurerm_public_ip" "hub_gw_pip" {
   resource_group_name = azurerm_resource_group.hub.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  zones = ["1"]
+  zones               = ["1"]
 }
 
 # ---------------------------------------------------------------------------
@@ -71,5 +71,15 @@ resource "azurerm_virtual_network_gateway" "hub" {
     public_ip_address_id          = azurerm_public_ip.hub_gw_pip.id
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.hub_gateway.id
+  }
+
+  vpn_client_configuration {
+    address_space        = var.p2s_client_address_pool
+    vpn_client_protocols = ["OpenVPN"]
+    vpn_auth_types        = ["AAD"]
+
+    aad_tenant   = "https://login.microsoftonline.com/${var.tenant_id}/"
+    aad_audience = var.p2s_aad_audience
+    aad_issuer   = "https://sts.windows.net/${var.tenant_id}/"
   }
 }

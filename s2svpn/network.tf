@@ -32,7 +32,7 @@ resource "azurerm_virtual_network" "onprem" {
 resource "azurerm_subnet" "onprem_workload" {
   provider = azurerm.onprem
 
-  name                 = "snet-workload"
+  name                 = "${var.onprem_name}-workload-subnet"
   resource_group_name  = azurerm_resource_group.onprem.name
   virtual_network_name = azurerm_virtual_network.onprem.name
   address_prefixes     = [var.onprem_subnet_address_prefix]
@@ -64,10 +64,37 @@ resource "azurerm_virtual_network" "hub" {
 resource "azurerm_subnet" "hub_workload" {
   provider = azurerm.hub
 
-  name                 = "snet-workload"
+  name                 = "${var.hub_name}-workload-subnet"
   resource_group_name  = azurerm_resource_group.hub.name
   virtual_network_name = azurerm_virtual_network.hub.name
   address_prefixes     = [var.hub_subnet_address_prefix]
+}
+
+resource "azurerm_network_security_group" "hub_workload_nsg" {
+  provider = azurerm.hub
+
+  name                = "${var.hub_name}-workload-nsg"
+  location            = azurerm_resource_group.hub.location
+  resource_group_name = azurerm_resource_group.hub.name
+
+  security_rule {
+    name                       = "AllowRDP"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "VirtualNetwork"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_subnet_network_security_group_association" "hub_workload_association" {
+  provider = azurerm.hub
+
+  subnet_id                 = azurerm_subnet.hub_workload.id
+  network_security_group_id = azurerm_network_security_group.hub_workload_nsg.id
 }
 
 resource "azurerm_subnet" "hub_gateway" {

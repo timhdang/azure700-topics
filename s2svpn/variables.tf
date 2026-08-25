@@ -51,13 +51,13 @@ variable "onprem_subnet_address_prefix" {
 
 variable "onprem_gateway_subnet_prefix" {
   type    = string
-  default = "10.0.255.0/27"
+  default = "10.0.255.0/26"
 }
 
 variable "hub_name" {
   description = "Short name for site 2 (Azure/hub side)"
   type        = string
-  default     = "azure"
+  default     = "hub"
 }
 
 variable "hub_resource_group_name" {
@@ -68,17 +68,17 @@ variable "hub_resource_group_name" {
 
 variable "hub_vnet_address_space" {
   type    = list(string)
-  default = ["10.1.0.0/16"]
+  default = ["10.99.0.0/16"]
 }
 
 variable "hub_subnet_address_prefix" {
   type    = string
-  default = "10.1.1.0/24"
+  default = "10.99.1.0/24"
 }
 
 variable "hub_gateway_subnet_prefix" {
   type    = string
-  default = "10.1.255.0/27"
+  default = "10.99.255.0/26"
 }
 
 variable "gateway_sku" {
@@ -92,4 +92,21 @@ variable "shared_key" {
   type        = string
   default     = "ChangeThisSharedKey123!"
   sensitive   = true
+}
+
+variable "tenant_id" {
+  description = "Microsoft Entra tenant ID used for P2S Azure AD authentication"
+  type        = string
+}
+
+variable "p2s_client_address_pool" {
+  description = "Address pool assigned to P2S VPN clients. Must NOT overlap the hub or onprem VNet address spaces."
+  type        = list(string)
+  default     = ["172.16.0.0/24"]
+}
+
+variable "p2s_aad_audience" {
+  description = "Microsoft-registered Azure VPN Client App ID (Azure Public cloud). Fixed value, same for every tenant."
+  type        = string
+  default     = "c632b3df-fb67-4d84-bdcf-b95ad541b5c8"
 }
